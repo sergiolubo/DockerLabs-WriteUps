@@ -7,7 +7,7 @@
 ------------------
 ## Scanning & Enumeration 
 
-We start by performing a general scan with **nmap** on the victim machine's IP to identify the open ports. 
+We perform a general scan with **nmap** on the victim machine's IP to identify the open ports. 
 
 ```shell
 sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn 172.17.0.2
