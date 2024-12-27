@@ -213,7 +213,7 @@ sudo sudo /bin/bash
 
 Finally, we gain root access:
 
-```
+```shell
 whoami
 ----------------
 root
