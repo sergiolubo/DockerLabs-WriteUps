@@ -1,8 +1,8 @@
 # Elevator Machine
 
-**Level:** Easy
+**Nivel:** Fácil
 
-**Author:** [beafn28](https://www.linkedin.com/in/beatriz-fresno-naumova-3797b931b/)
+**Autor:** [beafn28](https://www.linkedin.com/in/beatriz-fresno-naumova-3797b931b/)
 
 ------------------
 ## Escaneo 
