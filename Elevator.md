@@ -1,4 +1,4 @@
-# Elevator Machine
+# Elevator
 
 **Nivel:** Fácil
 
