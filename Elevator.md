@@ -73,7 +73,6 @@ Ahora intentamos subir una shell reversa en PHP, almacenada como **jpg**
 
 Configuramos la shell [PHP Pentester monkey reverse shell](https://www.revshells.com/PHP%20PentestMonkey?ip=172.17.0.1&port=4444&shell=%2Fbin%2Fbash&encoding=%2Fbin%2Fbash) y lo guardamos como la extensión **jpg**. 
 
-
 Nótese que hemos establecido **172.17.0.1** como la **IP** y **4444** como el **PORT** de escucha para el listener.
 
 ```shell
@@ -131,7 +130,6 @@ stty size
 ```
 
 Ahora podemos utilizar **Ctrl+L** y **Ctrl+C**.
-
 
 ------------------------------
 ## Escalando privilegios
