@@ -1,12 +1,12 @@
 # DockerLabs Writeups
 
-In this repository, I will upload WriteUps of the machines from the DockerLabs platform. At [DockerLabs](https://dockerlabs.es), you can download controlled Docker environments and automatically deploy using a bash script. These environments are ideal for practising ethical hacking and pen-testing.
+En este repositorio, voy a ir publicando los WriteUps de las máquinas de la plataforma DockerLabs. En [DockerLabs](https://dockerlabs.es), puedes descargar entornos controlados de Docker y desplegarlos automáticamente utilizando un script bash. Estos entornos son ideales para practicar hacking ético y pruebas de penetración.
 
-## What is DockerLabs?
-[DockerLabs](https://dockerlabs.es) is a platform that provides Docker-based lab environments specifically designed to learn and practice cybersecurity skills. These environments are preconfigured with various applications and settings containing known vulnerabilities, allowing users to experiment and safely learn about them.
+## Qué es DockerLabs?
+[DockerLabs](https://dockerlabs.es) es una plataforma que ofrece entornos de laboratorio basados en Docker diseñados específicamente para aprender y practicar habilidades de ciberseguridad. Estos entornos vienen preconfigurados con diversas aplicaciones y configuraciones que contienen vulnerabilidades conocidas, lo que permite a los usuarios experimentar y aprender sobre ellas de forma segura.
 
-- [DockerLabs](https://dockerlabs.es): The official DockerLabs website provides more information about the platform and access to the lab environments.
+- [DockerLabs](https://dockerlabs.es): El sitio web oficial de DockerLabs ofrece más información sobre la plataforma y acceso a los entornos de laboratorio.
 
-## Repository Structure
-- **MachineName.md**: Each file will be labelled with the name of the corresponding machine and will contain the step-by-step solution.
-- **README.md**: This file you are reading right now provides an overview of the repository and how to use it.
+## Estructura del repositorio
+- **MachineName.md**: Cada archivo llevará el nombre de la máquina correspondiente y contendrá la solución paso a paso.
+- **README.md**: Es este fichero que estas leyendo, proporciona una descripción general del repositorio y cómo utilizarlo.
