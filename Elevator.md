@@ -215,7 +215,7 @@ User scooby may run the following commands on 36ae1fa1a512:
 sudo sudo /bin/bash
 ```
 
-Finalmente hemos podido obtener usuario como **root**:
+Finalmente hemos podido obtener acceso como usuario **root**:
 
 ```shell
 whoami
